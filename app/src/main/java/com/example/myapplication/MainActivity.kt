@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -24,6 +26,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.myapplication.ui.theme.NavHostAnimationIssueTheme
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlin.random.Random
 
@@ -42,6 +48,28 @@ class MainActivity : ComponentActivity() {
         setContent {
             NavHostAnimationIssueTheme {
                 val navController = rememberNavController()
+                val coroutineScope = rememberCoroutineScope()
+
+                val timer = (0..Int.MAX_VALUE)
+                    .asSequence()
+                    .asFlow()
+                    .onEach { delay(Random.nextLong(270, 350)) }
+
+                LaunchedEffect(Unit) {
+                    coroutineScope.launch {
+                        timer.collect {
+                            navController.navigate(
+                                route = DefaultRoute(
+                                    color = Color(
+                                        red = Random.nextFloat(),
+                                        green = Random.nextFloat(),
+                                        blue = Random.nextFloat(),
+                                    ).toArgb()
+                                )
+                            )
+                        }
+                    }
+                }
 
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
@@ -97,7 +125,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-private const val ANIMATION_DURATION = 700
+private const val ANIMATION_DURATION = 300
 
 private val ENTER_TRANSITION = slideInHorizontally(
     animationSpec = tween(
